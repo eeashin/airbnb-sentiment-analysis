@@ -1,10 +1,74 @@
-FROM jupyter/pyspark-notebook:latest
+#Download base image ubuntu 18.04
+FROM ubuntu:18.04
 
-# Switch to the root user to install packages
+ENV NB_USER jovyan
+ENV NB_UID 1000
+ENV HOME /home/${NB_USER}
+
+ENV PYSPARK_PYTHON=python3
+ENV PYSPARK_DRIVER_PYTHON=python3
+
+RUN apt-get update && apt-get install -y \
+    tar \
+    wget \
+    bash \
+    rsync \
+    gcc \
+    libfreetype6-dev \
+    libhdf5-serial-dev \
+    libpng-dev \
+    libzmq3-dev \
+    python3 \
+    python3-dev \
+    python3-pip \
+    unzip \
+    pkg-config \
+    software-properties-common \
+    graphviz
+
+RUN adduser --disabled-password \
+    --gecos "Default user" \
+    --uid ${NB_UID} \
+    ${NB_USER}
+
+# Install OpenJDK-8
+RUN apt-get update && \
+    apt-get install -y openjdk-8-jdk && \
+    apt-get install -y ant && \
+    apt-get clean;
+
+# Fix certificate issues
+RUN apt-get update && \
+    apt-get install ca-certificates-java && \
+    apt-get clean && \
+    update-ca-certificates -f;
+# Setup JAVA_HOME -- useful for docker commandline
+ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
+RUN export JAVA_HOME
+
+RUN echo "export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/" >> ~/.bashrc
+
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN pip3 install --upgrade pip
+# You only need pyspark and spark-nlp paclages to use Spark NLP
+# The rest of the PyPI packages are here as examples
+RUN pip3 install --no-cache-dir pyspark spark-nlp==3.2.3 notebook==5.* numpy pandas mlflow Keras scikit-spark scikit-learn scipy pydot graphviz
+
+# Make sure the contents of our repo are in ${HOME}
+RUN mkdir -p /home/jovyan/tutorials
+RUN mkdir -p /home/jovyan/jupyter
+
+COPY data ${HOME}/data
+COPY jupyter ${HOME}/jupyter
+COPY tutorials ${HOME}/tutorials
+RUN jupyter notebook --generate-config
+COPY jupyter_notebook_config.json /home/jovyan/.jupyter/jupyter_notebook_config.json
 USER root
+RUN chown -R ${NB_UID} ${HOME}
+USER ${NB_USER}
 
-# Install pymongo using pip
-RUN pip install pymongo sparknlp
-RUN pip install --upgrade 'jupyter-server<2.0.0'
-# Change back to the default user (jovyan)
-USER jovyan
+WORKDIR ${HOME}
+
+# Specify the default command to run
+CMD ["jupyter", "notebook", "--ip", "0.0.0.0", "--NotebookApp.token=''","--NotebookApp.password=''"]
