@@ -3,10 +3,10 @@ FROM ubuntu:18.04
 
 ENV NB_USER jovyan
 ENV NB_UID 1000
-ENV HOME /home/${NB_USER}
+ENV HOME /home/${NB_USER}/
 
-ENV PYSPARK_PYTHON=python3
-ENV PYSPARK_DRIVER_PYTHON=python3
+ENV PYSPARK_PYTHON=python
+ENV PYSPARK_DRIVER_PYTHON=python
 
 RUN apt-get update && apt-get install -y \
     tar \
@@ -43,10 +43,10 @@ RUN apt-get update && \
     apt-get clean && \
     update-ca-certificates -f;
 # Setup JAVA_HOME -- useful for docker commandline
-ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
+ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-arm64
 RUN export JAVA_HOME
 
-RUN echo "export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/" >> ~/.bashrc
+RUN echo "export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64" >> ~/.bashrc
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -71,4 +71,4 @@ USER ${NB_USER}
 WORKDIR ${HOME}
 
 # Specify the default command to run
-CMD ["jupyter", "notebook", "--ip", "0.0.0.0", "--NotebookApp.token=''","--NotebookApp.password=''"]
+CMD ["jupyter", "notebook", "--ip", "0.0.0.0", "--NotebookApp.password=''"]
