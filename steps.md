@@ -1,5 +1,5 @@
 
-`sh build.sh`
+`cd images && sh build.sh && cd ..`
 
 
 `docker compose -f docker-compose.shared-workspace.yml up -d --build`
