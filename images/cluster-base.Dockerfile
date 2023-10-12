@@ -14,6 +14,6 @@ RUN mkdir -p ${shared_workspace} && \
 ENV SHARED_WORKSPACE=${shared_workspace}
 
 # -- Runtime
-
+VOLUME ["/app"]
 VOLUME ${shared_workspace}
 CMD ["bash"]

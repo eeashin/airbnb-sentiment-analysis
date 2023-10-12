@@ -11,6 +11,7 @@ services:
       - 8888:8888
     volumes:
       - shared-workspace:/opt/workspace
+      - ./app:/opt/workspace
     networks:
       - localnet
   spark-master:
